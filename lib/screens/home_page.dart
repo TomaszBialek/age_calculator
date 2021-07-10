@@ -1,3 +1,5 @@
+import 'package:age/age.dart';
+import 'package:age_calculator/services/age_calculation.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -7,6 +9,84 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  DateTime todayDate = DateTime.now();
+  DateTime dob = DateTime(2000, 1, 1);
+
+  AgeDuration? _ageDuration;
+  AgeDuration? _nextBirthdate;
+  int? _nextbdayWeekday;
+
+  List<String> _months = [
+    "months",
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+  ];
+
+  List<String> _weeks = [
+    "weeks",
+    "MONDAY",
+    "TUESDAY",
+    "WEDNESDAY",
+    "THURSDAY",
+    "FRIDAY",
+    "SATURDAY",
+    "SUNDAY",
+  ];
+
+  Future<Null> _selectTodayDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: todayDate,
+      firstDate: dob,
+      lastDate: DateTime(2101),
+    );
+
+    if (picked != null && picked != todayDate) {
+      setState(() {
+        todayDate = picked;
+        _ageDuration = AgeCalculation().calculateAge(todayDate, dob);
+        _nextBirthdate = AgeCalculation().nextBirthday(todayDate, dob);
+        _nextbdayWeekday = AgeCalculation().nextbday(todayDate, dob);
+      });
+    }
+  }
+
+  Future<Null> _selectDOBDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: dob,
+      firstDate: DateTime(1900),
+      lastDate: todayDate,
+    );
+
+    if (picked != null && picked != todayDate) {
+      setState(() {
+        dob = picked;
+        _ageDuration = AgeCalculation().calculateAge(todayDate, dob);
+        _nextBirthdate = AgeCalculation().nextBirthday(todayDate, dob);
+        _nextbdayWeekday = AgeCalculation().nextbday(todayDate, dob);
+      });
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _ageDuration = AgeCalculation().calculateAge(todayDate, dob);
+    _nextBirthdate = AgeCalculation().nextBirthday(todayDate, dob);
+    _nextbdayWeekday = AgeCalculation().nextbday(todayDate, dob);
+  }
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -47,7 +127,7 @@ class _HomePageState extends State<HomePage> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          "20 OCTOBER 2020",
+                          "${todayDate.day} ${_months[todayDate.month]} ${todayDate.year}",
                           style: TextStyle(
                               color: Color(0xFFCDDC39),
                               fontSize: 22,
@@ -56,9 +136,14 @@ class _HomePageState extends State<HomePage> {
                         SizedBox(
                           width: 10,
                         ),
-                        Icon(
-                          Icons.calendar_today,
-                          color: Colors.white,
+                        GestureDetector(
+                          onTap: () {
+                            _selectTodayDate(context);
+                          },
+                          child: Icon(
+                            Icons.calendar_today,
+                            color: Colors.white,
+                          ),
                         )
                       ],
                     )
@@ -74,7 +159,7 @@ class _HomePageState extends State<HomePage> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      "Date of Birth",
+                      "${dob.day} ${_months[dob.month]} ${dob.year}",
                       style: TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.w400,
@@ -93,9 +178,14 @@ class _HomePageState extends State<HomePage> {
                         SizedBox(
                           width: 10,
                         ),
-                        Icon(
-                          Icons.calendar_today,
-                          color: Colors.white,
+                        GestureDetector(
+                          onTap: () {
+                            _selectDOBDate(context);
+                          },
+                          child: Icon(
+                            Icons.calendar_today,
+                            color: Colors.white,
+                          ),
                         )
                       ],
                     )
@@ -135,7 +225,7 @@ class _HomePageState extends State<HomePage> {
                                 crossAxisAlignment: CrossAxisAlignment.end,
                                 children: [
                                   Text(
-                                    "24",
+                                    "${_ageDuration?.years}",
                                     style: TextStyle(
                                       color: Color(0xFFCDDC39),
                                       fontSize: 76,
@@ -158,7 +248,7 @@ class _HomePageState extends State<HomePage> {
                                 ],
                               ),
                               Text(
-                                "9 months | 19 days",
+                                "${_ageDuration?.months} months | ${_ageDuration?.days} days",
                                 style: TextStyle(
                                   color: Colors.white,
                                   fontSize: 20,
@@ -195,7 +285,7 @@ class _HomePageState extends State<HomePage> {
                                 size: 40,
                               ),
                               Text(
-                                "FRIDAY",
+                                "${_weeks[_nextbdayWeekday!]}",
                                 style: TextStyle(
                                   color: Colors.white,
                                   fontSize: 22,
@@ -203,7 +293,7 @@ class _HomePageState extends State<HomePage> {
                                 ),
                               ),
                               Text(
-                                "2 months | 12 days",
+                                "${_nextBirthdate?.months} months | ${_nextBirthdate?.days} days",
                                 style: TextStyle(
                                   color: Colors.white,
                                   fontSize: 20,
@@ -254,7 +344,7 @@ class _HomePageState extends State<HomePage> {
                                 height: 5,
                               ),
                               Text(
-                                "24",
+                                "${_ageDuration?.years}",
                                 style: TextStyle(
                                   color: Colors.white,
                                   fontSize: 28,
@@ -277,7 +367,7 @@ class _HomePageState extends State<HomePage> {
                                 height: 5,
                               ),
                               Text(
-                                "261",
+                                "${((_ageDuration!.years) * 12) + (_ageDuration!.months)}",
                                 style: TextStyle(
                                   color: Colors.white,
                                   fontSize: 28,
@@ -300,7 +390,7 @@ class _HomePageState extends State<HomePage> {
                                 height: 5,
                               ),
                               Text(
-                                "1137",
+                                "${(todayDate.difference(dob).inDays / 7).floor()}",
                                 style: TextStyle(
                                   color: Colors.white,
                                   fontSize: 28,
@@ -336,7 +426,7 @@ class _HomePageState extends State<HomePage> {
                                 height: 5,
                               ),
                               Text(
-                                "7963",
+                                "${todayDate.difference(dob).inDays}",
                                 style: TextStyle(
                                   color: Colors.white,
                                   fontSize: 18,
@@ -359,7 +449,7 @@ class _HomePageState extends State<HomePage> {
                                 height: 5,
                               ),
                               Text(
-                                "191112",
+                                "${todayDate.difference(dob).inHours}",
                                 style: TextStyle(
                                   color: Colors.white,
                                   fontSize: 18,
@@ -382,7 +472,7 @@ class _HomePageState extends State<HomePage> {
                                 height: 5,
                               ),
                               Text(
-                                "11466720",
+                                "${todayDate.difference(dob).inMinutes}",
                                 style: TextStyle(
                                   color: Colors.white,
                                   fontSize: 18,
